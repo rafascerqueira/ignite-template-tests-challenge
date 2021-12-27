@@ -1,7 +1,11 @@
-import { compare } from "bcryptjs";
 import { InMemoryUsersRepository } from "../../modules/users/repositories/in-memory/InMemoryUsersRepository";
 import { AuthenticateUserUseCase } from "../../modules/users/useCases/authenticateUser/AuthenticateUserUseCase";
+import { IncorrectEmailOrPasswordError } from "../../modules/users/useCases/authenticateUser/IncorrectEmailOrPasswordError";
 import { CreateUserUseCase } from "../../modules/users/useCases/createUser/CreateUserUseCase";
+
+let autheticateUserUseCase: AuthenticateUserUseCase;
+let createUserUseCase: CreateUserUseCase;
+let inMemoryUsersRepository: InMemoryUsersRepository;
 
 const userMock = {
   name: "User Name",
@@ -9,25 +13,39 @@ const userMock = {
   password: "potatoes",
 };
 
-let inMemoryUsersRepository: InMemoryUsersRepository;
-let authenticateUserUseCase: AuthenticateUserUseCase;
-let createUserUseCase: CreateUserUseCase;
-
-describe("Begin new session", () => {
-  beforeEach(() => {
+describe("Autheticate user Use Case", () => {
+  beforeEach(async () => {
     inMemoryUsersRepository = new InMemoryUsersRepository();
-    authenticateUserUseCase = new AuthenticateUserUseCase(
+    createUserUseCase = new CreateUserUseCase(inMemoryUsersRepository);
+    autheticateUserUseCase = new AuthenticateUserUseCase(
       inMemoryUsersRepository
     );
-    createUserUseCase = new CreateUserUseCase(inMemoryUsersRepository);
+
+    await createUserUseCase.execute(userMock);
   });
 
-  it("should be able to authenticate a user", async () => {
-    const user = await createUserUseCase.execute(userMock);
-    const password = "potatoes";
+  it("Must be able to start a new session using correctly credentials", async () => {
+    const response = await autheticateUserUseCase.execute({
+      email: "user_email@email.com",
+      password: "potatoes",
+    });
 
-    const passwordMatch = await compare(password, user.password);
+    expect(response.user).toHaveProperty("id");
+  });
 
-    expect(passwordMatch).toBeTruthy();
+  it("Should not be able to start a new session with the wrong username or password", async () => {
+    expect(async () => {
+      await autheticateUserUseCase.execute({
+        email: "user_deny@email.com",
+        password: "potatoes",
+      });
+    }).rejects.toBeInstanceOf(IncorrectEmailOrPasswordError);
+
+    expect(async () => {
+      await autheticateUserUseCase.execute({
+        email: "user_email@email.com",
+        password: "tomatoes",
+      });
+    }).rejects.toBeInstanceOf(IncorrectEmailOrPasswordError);
   });
 });

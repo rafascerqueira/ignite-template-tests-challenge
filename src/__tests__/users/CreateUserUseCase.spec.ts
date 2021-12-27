@@ -1,4 +1,5 @@
 import { InMemoryUsersRepository } from "../../modules/users/repositories/in-memory/InMemoryUsersRepository";
+import { CreateUserError } from "../../modules/users/useCases/createUser/CreateUserError";
 import { CreateUserUseCase } from "../../modules/users/useCases/createUser/CreateUserUseCase";
 
 let inMemoryUsersRepository: InMemoryUsersRepository;
@@ -16,7 +17,23 @@ describe("Create user", () => {
       email: "user_email@email.com",
       password: "potatoes",
     });
-    // need to use supertest to get status code 201 bellow
+
     expect(user).toHaveProperty("id");
+  });
+
+  it("Should not be able to create a new user", async () => {
+    expect(async () => {
+      await createUserUseCase.execute({
+        name: "User Name",
+        email: "user_email@email.com",
+        password: "samepotatoes",
+      });
+
+      await createUserUseCase.execute({
+        name: "User Name",
+        email: "user_email@email.com",
+        password: "samepotatoes",
+      });
+    }).rejects.toBeInstanceOf(CreateUserError);
   });
 });
