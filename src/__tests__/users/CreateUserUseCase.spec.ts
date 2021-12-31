@@ -1,3 +1,4 @@
+import { User } from "../../modules/users/entities/User";
 import { InMemoryUsersRepository } from "../../modules/users/repositories/in-memory/InMemoryUsersRepository";
 import { CreateUserError } from "../../modules/users/useCases/createUser/CreateUserError";
 import { CreateUserUseCase } from "../../modules/users/useCases/createUser/CreateUserUseCase";
@@ -18,6 +19,7 @@ describe("Create user", () => {
       password: "potatoes",
     });
 
+    expect(user).toBeInstanceOf(User);
     expect(user).toHaveProperty("id");
   });
 

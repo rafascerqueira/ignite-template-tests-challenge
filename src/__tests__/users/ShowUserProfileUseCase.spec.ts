@@ -51,7 +51,7 @@ describe("Show user profile Use Case", () => {
 
       // Force id overwrite
       Object.assign(user, {
-        id: "a2e5747f-b0ab-4730-84f2-f9bc7d00898a",
+        id: "tHisIsaINvaLiDuUiD",
       });
 
       const user_id = user.id as string;
